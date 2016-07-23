@@ -6,7 +6,7 @@
 #include <Wire.h>                 
 
 #define onModulePin 2
-#define VOLTAJE_IN A5
+#define VOLTAJE_IN A0
 
 
 SoftwareSerial mySerial(7, 8);
@@ -14,9 +14,9 @@ SoftwareSerial mySerial(7, 8);
 String estado;
 String estado_anterior;
 
-//LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
-LiquidCrystal_I2C lcd(0x27);
+//LiquidCrystal_I2C lcd(0x27);
 
 const byte ROWS = 4; 
 const byte COLS = 3; 
@@ -28,6 +28,7 @@ char keys[ROWS][COLS] = {
 };
 byte rowPins[ROWS] = {3,4,5,6}; //Filas
 byte colPins[COLS] = {9,10,11}; //Columnas
+
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, 
 colPins, ROWS, COLS );
 int val=0;//Valor de referencia
@@ -42,6 +43,8 @@ void setup()
   pinMode(VOLTAJE_IN, INPUT);
 
   digitalWrite(onModulePin,HIGH);
+
+  lcd.begin(16,2);//Arranca LCD
   
   estado="INIT";
   estado_anterior=estado;
@@ -50,12 +53,32 @@ void setup()
   Serial.begin(19200);
   delay(1000);
   Serial.println("Iniciando... estado=" + estado);
-  power("off");
+  //pinta en lcd
+  lcd.setCursor(2,0);             
+  lcd.print("Iniciando...");
+  power("off"); //apaga GSM
   Serial.println("Arrancando módulo GSM...");
+  //pinta en lcd
+  lcd.clear();
+  lcd.setCursor(3,0);             
+  lcd.print("Arrancando");
+  lcd.setCursor(3,1);             
+  lcd.print("modulo GSM");
+
   delay(3000);
-  power("on");
+  power("on"); //Inicia GSM
   Serial.println("Iniciado");
+
+  //pinta en lcd
+  lcd.clear();
+  lcd.setCursor(4,0);             
+  lcd.print("Iniciado");
+  lcd.setCursor(0,1);             
+  lcd.print("Setup pulsar '*'");
+
   //leer de la EPROM
+
+  
 }
 
 void loop()
@@ -70,6 +93,7 @@ void loop()
       modoSetup();
     }
   }
+
   // leer voltaje de entrada
   lectura = analogRead(VOLTAJE_IN);
   Serial.println(lectura);
@@ -96,9 +120,6 @@ void loop()
   // imprimir estado
   Serial.println("Estado=" + estado);
   
-  
-  
-  
   delay(200);
 
   // imprimir comandos GSM  
@@ -110,6 +131,11 @@ void loop()
 void modoSetup(){
       telefono_aux="";
       Serial.println("Setup *ACEPTAR #BORRAR");
+      // pinta en lcd
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("*ACEPTAR #BORRAR");
+      
       char key2;
       while(true/*(key2=keypad.getKey())!='*'*/){
         key2=keypad.getKey();
@@ -117,23 +143,63 @@ void modoSetup(){
           if (telefono_aux.length()<9)
             telefono_aux+=key2;
           Serial.println(telefono_aux);
+
+          // pinta en lcd
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("*ACEPTAR #BORRAR");
+          lcd.setCursor(0,1);
+          lcd.print(telefono_aux);
+          
         }else if (key2=='#'){
           if (telefono_aux!=""){
             telefono_aux = telefono_aux.substring(0,telefono_aux.length()-1);
           }
           Serial.println(telefono_aux);
+
+          // pinta en lcd
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("*ACEPTAR #BORRAR");
+          lcd.setCursor(0,1);
+          lcd.print(telefono_aux);
+
         }else if (key2=='*'){
           if (telefono_aux.length()<9){
             Serial.println("Cancelar? *SI #NO");
+
+            // pinta en lcd
+            lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print("Cancel? *SI #NO");
+            lcd.setCursor(0,1);
+            lcd.print(telefono_aux);
+
             char key3;
             while((key2=keypad.getKey())!='*' && key2!='#'){}
             if (key2=='*'){
               break; 
             }else{
               Serial.println(telefono_aux);
+
+              // pinta en lcd
+              lcd.clear();
+              lcd.setCursor(0,0);
+              lcd.print("*ACEPTAR #BORRAR");
+              lcd.setCursor(0,1);
+              lcd.print(telefono_aux);
+
             }
           }else{
-             Serial.println("Guardar Telf.? *SI #VOLVER");
+              Serial.println("Guardar Telf.? *SI #VOLVER");
+
+              // pinta en lcd
+              lcd.clear();
+              lcd.setCursor(0,0);
+              lcd.print("Guardar " + telefono_aux + "?");
+              lcd.setCursor(0,1);
+              lcd.print("*SI #VOLVER");
+            
             char key3;
             while((key2=keypad.getKey())!='*' && key2!='#'){}
             if (key2=='*'){
@@ -142,11 +208,26 @@ void modoSetup(){
               break; 
             }else{
               Serial.println(telefono_aux);
+
+              // pinta en lcd
+              lcd.clear();
+              lcd.setCursor(0,0);
+              lcd.print("*ACEPTAR #BORRAR");
+              lcd.setCursor(0,1);
+              lcd.print(telefono_aux);
             }
            
           }
         }
       }
+
+  //pinta en lcd
+  lcd.clear();
+  lcd.setCursor(4,0);             
+  lcd.print("Iniciado");
+  lcd.setCursor(0,1);             
+  lcd.print("Setup pulsar '*'");
+
 }
 
 void SendTextMessage(String mensaje)
