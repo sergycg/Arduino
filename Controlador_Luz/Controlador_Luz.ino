@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 #include <LiquidCrystal_I2C.h>
 
 #include <SoftwareSerial.h>
@@ -7,6 +9,7 @@
 
 #define onModulePin 2
 #define VOLTAJE_IN A0
+#define POS_EEPROM 10
 
 
 SoftwareSerial mySerial(7, 8);
@@ -35,6 +38,7 @@ int val=0;//Valor de referencia
 int cuadro= 1023;// El numero 1023 dibuja un cuadro en el LCD
 String telefono_aux = "";
 String telefono = "";
+char telefono_envio_SMS[9];
 
 void setup()
 {
@@ -77,7 +81,7 @@ void setup()
   lcd.print("Setup pulsar '*'");
 
   //leer de la EPROM
-
+  EEPROM.get(POS_EEPROM,telefono_envio_SMS);
   
 }
 
@@ -91,6 +95,21 @@ void loop()
     Serial.println(key);
     if(key=='*'){
       modoSetup();
+    }else if(key=='#'){
+      //pinta en lcd
+      lcd.clear();
+      lcd.setCursor(4,0);             
+      lcd.print("Iniciado");
+      lcd.setCursor(0,1);             
+      lcd.print(telefonoCharToString(telefono_envio_SMS));
+      Serial.println(telefonoCharToString(telefono_envio_SMS));
+      delay(3000);
+      //pinta en lcd
+      lcd.clear();
+      lcd.setCursor(4,0);             
+      lcd.print("Iniciado");
+      lcd.setCursor(0,1);             
+      lcd.print("Setup pulsar '*'");
     }
   }
 
@@ -101,14 +120,14 @@ void loop()
     estado_anterior=estado;
     estado="HIGH";
   }else if (lectura<200 && estado=="HIGH"){ // No hay luz
-    //SendTextMessage("Se ha ido la luz");
-    Serial.println("Se ha ido la luz");
+    SendTextMessage("Se ha ido la luz");
+    //Serial.println("Se ha ido la luz");
     estado_anterior=estado;
     estado="LOW";
   }
   if (estado_anterior=="LOW" && estado=="HIGH"){ // Se reestabece la luz
-    //SendTextMessage("Se ha reestablecido la luz");
-    Serial.println("Se ha reestablecido la luz");
+    SendTextMessage("Se ha reestablecido la luz");
+    //Serial.println("Se ha reestablecido la luz");
   }
 
 
@@ -196,7 +215,7 @@ void modoSetup(){
               // pinta en lcd
               lcd.clear();
               lcd.setCursor(0,0);
-              lcd.print("Guardar " + telefono_aux + "?");
+              lcd.print("Guardar" + telefono_aux + "?");
               lcd.setCursor(0,1);
               lcd.print("*SI #VOLVER");
             
@@ -204,7 +223,15 @@ void modoSetup(){
             while((key2=keypad.getKey())!='*' && key2!='#'){}
             if (key2=='*'){
               telefono = telefono_aux;
+              for (int i=0;i<telefono.length();i++){
+                telefono_envio_SMS[i]=telefono[i];
+                //Serial.print(telefono_envio_SMS[i]);
+                //delay(1000);
+              }
+              Serial.println(telefono_envio_SMS);
+              delay(1000);
               // guardar en la EPROM
+              EEPROM.put(POS_EEPROM, telefono_envio_SMS);
               break; 
             }else{
               Serial.println(telefono_aux);
@@ -230,12 +257,37 @@ void modoSetup(){
 
 }
 
+String telefonoCharToString(char telefono[]){
+  String telefonoString = "";
+  for (byte i=0;i<9;i++){
+    telefonoString += telefono[i];
+  }
+  return telefonoString;
+}
+
 void SendTextMessage(String mensaje)
 {
+
+
+  char* c1 = "AT+CMGS = \"+34";
+  char* c2 = "123456789";
+  char* c4 = "\"";
+  for (int i=0;i<9;i++){
+    c2[i]=telefono_envio_SMS[i];
+  }
+  char* c3;
+  c3 = (char*)malloc(strlen(c1)+strlen(c2)+strlen(c4)); 
+  strcpy(c3, c1); 
+  strcat(c3, c2); 
+  strcat(c3, c4); 
+
+
+
 //  Serial.println("prueba");
   mySerial.print("AT+CMGF=1\r");
   delay(1000);
-  mySerial.println("AT+CMGS = \"+34654161878\"");
+  //mySerial.println("AT+CMGS = \"+34654161878\"");
+  mySerial.println(c3);
   delay(1000);
   mySerial.println(mensaje);
   delay(1000);
@@ -246,13 +298,28 @@ void SendTextMessage(String mensaje)
 
 void SendTextMessage2(String mensaje)
 {
+
+  char* c1 = "AT+CMGS = \"+34";
+  char* c2 = "123456789";
+  char* c4 = "\"";
+  for (int i=0;i<9;i++){
+    c2[i]=telefono_envio_SMS[i];
+  }
+  char* c3;
+  c3 = (char*)malloc(strlen(c1)+strlen(c2)+strlen(c4)); 
+  strcpy(c3, c1); 
+  strcat(c3, c2); 
+  strcat(c3, c4); 
+
+  
   int8_t answer = 0;
   //  mySerial.print("AT+CMGF=1\r");
   //  delay(100);
   sendATcommand("AT+CMGF=1\r", "OK", 2000);
   //  mySerial.println("AT+CMGS = \"+34654161878\"");
   //  delay(100);
-  answer=sendATcommand("AT+CMGS = \"+34654161878\"", ">", 2000);
+//  answer=sendATcommand("AT+CMGS = \"+34654161878\"", ">", 2000);
+  answer=sendATcommand(c3, ">", 2000);
   if (answer != 0)
   {
     mySerial.println(mensaje);
@@ -279,7 +346,7 @@ void SendTextMessage2(String mensaje)
 
 void DialVoiceCall()
 {
-  mySerial.println("ATD+34654161878;");//dial the number
+  mySerial.println("ATD+34"+telefonoCharToString(telefono_envio_SMS)+";");//dial the number
   delay(100);
   mySerial.println();
 }
