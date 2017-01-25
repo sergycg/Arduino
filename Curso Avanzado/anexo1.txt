@@ -1,0 +1,9 @@
+C:\Program Files <x86>\Arduino\Arduino_debug.exe --upload --board arduino:avr:uno --port COM13 “C:\Users\sindormir\Documents\Arduino\Blink\Blink.ino”
+
+~/Arduino/Blink$ arduino --upload --board arduino:avr:uno --port /dev/ttyACM0 Blink.ino
+
+arduino --pref build.path=/tmp/ --verify blink.ino 2>/dev/null > /dev/null && echo "Compilación OK" || exit 1
+
+scp /tmp/blink.ino.hex pi@84.77.122.23: > /dev/null && echo "Transferencia de fichero OK" || exit 2
+
+ssh pi@192.168.1.1 sh graba-arduino.sh blink.ino.hex 2>/dev/null > /dev/null && echo "Upload OK" || exit 3
