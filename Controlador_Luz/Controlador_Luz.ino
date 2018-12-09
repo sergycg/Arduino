@@ -158,7 +158,7 @@ void modoSetup(){
       char key2;
       while(true/*(key2=keypad.getKey())!='*'*/){
         key2=keypad.getKey();
-        if (key2=='1' || key2=='2' || key2=='3' || key2=='4' || key2=='5' || key2=='6' || key2=='7' || key2=='8' || key2=='9'){
+        if (key2=='0' || key2=='1' || key2=='2' || key2=='3' || key2=='4' || key2=='5' || key2=='6' || key2=='7' || key2=='8' || key2=='9'){
           if (telefono_aux.length()<9)
             telefono_aux+=key2;
           Serial.println(telefono_aux);
