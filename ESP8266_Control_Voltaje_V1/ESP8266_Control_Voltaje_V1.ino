@@ -2,6 +2,7 @@
 #define INICIO 0
 #define LUZ_APAGADA 1
 #define LUZ_ENCENDIDA 2
+#define NUM_PARAMS 4
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -10,6 +11,7 @@
 #include <Hash.h>
 #include <FS.h>
 //#include "ESPAsyncWebServer.h"
+#include <EEPROM.h>
 
 ESP8266WebServer server(80);
 //AsyncWebServer server(80);
@@ -20,10 +22,10 @@ char auth[] = "HAKp6xw09rLSbciJShiSduxMshF2b_s8";
 
 // Your WiFi credentials.
 // Set password to "" for open networks.
-char ssid[] = "MOVISTAR_2957";
-char pass[] = "61BB34D737589D4D1166";
+String ssid = "MOVISTAR_2957";
+String pass = "61BB34D737589D4D1166";
 
-byte arduino_mac[] = { 0x5C, 0xCF, 0x7F, 0xD0, 0x0E, 0xF8 };
+//byte arduino_mac[] = { 0x5C, 0xCF, 0x7F, 0xD0, 0x0E, 0xF8 };
 IPAddress arduino_ip(192, 168, 1, 241);
 IPAddress gateway_ip(192, 168, 1, 1);
 IPAddress subnet_mask(255, 255, 255, 0);
@@ -39,14 +41,32 @@ WidgetTerminal terminal(V3);
 
 void setup()
 {
-  Serial.println("Inicializando...");
+ 
 
   Serial.begin(9600);
   pinMode(D4, OUTPUT);
-
   veces = 0;
   estado = INICIO;
+  Serial.println();
+  
 
+  // CARGAR CONFIGURACION DE LA EEPROM
+  EEPROM.begin(512);
+
+  // CONFIGURACION INICIAL
+//  clear_EEPROM();
+//  write_to_Memory(String(ssid), String(pass), IpAddress2String(arduino_ip), IpAddress2String(gateway_ip));
+//  delay(2000);
+
+  // OBTENER CONFIGURACION
+  read_EEPROM();
+  
+  EEPROM.end();
+  delay(2000);
+
+ 
+  Serial.println("");
+  Serial.print("Inicializando...");
   WIFI_setup();
   blynk_setup();
   spiffs_setup();
@@ -96,8 +116,13 @@ void VCCInput() {
 
 }
 
-
-
+String IpAddress2String(const IPAddress& ipAddress)
+{
+  return String(ipAddress[0]) + String(".") +\
+  String(ipAddress[1]) + String(".") +\
+  String(ipAddress[2]) + String(".") +\
+  String(ipAddress[3])  ;
+}
 
 //FUNCION PARA CARGAR EL ARCHIVO DEL SERVIDOR WEB index.html
 /*bool handleFileRead(String path) {
@@ -132,127 +157,3 @@ void VCCInput() {
   return fileContent;
   }
 */
-/******************************* SETUP ******************************/
-void WIFI_setup() {
-
-  WiFi.mode(WIFI_STA);
-  WiFi.config(arduino_ip, dns_ip, gateway_ip, subnet_mask);
-  WiFi.begin(ssid, pass);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  WiFi.setAutoReconnect(true);
-  Serial.println("WiFi conectada.");
-  Serial.println();
-  WiFi.printDiag(Serial);
-  Serial.println();
-  Serial.print("STA dirección IP: ");
-  Serial.println(WiFi.localIP());
-
-}
-
-void config_rest_server_routing() {
-
-/*  server.onNotFound([]() {
-    if (!handleFileRead("/index.html"))
-      server.send(404, "text/plain", "Archivo no encontrado");
-  });
-*/
-  server.onNotFound([]() {
-    server.send(200, "text/html",
-                "Welcome to the ESP8266 REST Web Server");
-  });
-  //    server.on("/leds", HTTP_GET, get_leds);
-  //    server.on("/leds", HTTP_POST, post_put_leds);
-  //    server.on("/leds", HTTP_PUT, post_put_leds);
-  server.on("/reset", HTTP_GET, softReset);
-  //  server.on("/prueba", HTTP_GET, prueba);
-
-  server.on("/prueba", HTTP_GET, []() {
-    if (!handleStringFileRead("/index.html", 200))
-      server.send(404, "text/plain", "Archivo no encontrado");
-  });
-
-}
-
-void softReset() {
-  ESP.reset();
-}
-
-
-//FUNCION PARA CARGAR EL ARCHIVO DEL SERVIDOR WEB
-bool handleStringFileRead(String path, int code) {
-  Serial.println("handleFileRead: " + path);
-  if (SPIFFS.exists(path)) {
-    server.send(code, getContentType(path), getFileToString(path));
-    return true;
-  }
-  return false;
-}
-
-//FUNCION PARA IDENTIFICAR EL TIPO DE CONTENIDO DE LOS ARCHIVOS DEL SERVIDOR WEB
-String getContentType(String filename) {
-//  if (server.hasArg("download")) return "application/octet-stream";
-//  else 
-  if (filename.endsWith(".htm")) return "text/html";
-  else if (filename.endsWith(".html")) return "text/html";
-  else if (filename.endsWith(".css")) return "text/css";
-  else if (filename.endsWith(".js")) return "application/javascript";
-  else if (filename.endsWith(".png")) return "image/png";
-  else if (filename.endsWith(".gif")) return "image/gif";
-  else if (filename.endsWith(".jpg")) return "image/jpeg";
-  else if (filename.endsWith(".ico")) return "image/x-icon";
-  else if (filename.endsWith(".xml")) return "text/xml";
-  else if (filename.endsWith(".pdf")) return "application/x-pdf";
-  else if (filename.endsWith(".zip")) return "application/x-zip";
-  else if (filename.endsWith(".gz")) return "application/x-gzip";
-  return "text/plain";
-}
-
-String getFileToString(String path) {
-  File file = SPIFFS.open(path, "r");
-
-  Serial.println("- read from file:");
-  String fileContent;
-  while (file.available()) {
-    fileContent += String((char)file.read());
-  }
-  //fileContent.replace("{{PRUEBA}}", "123456");
-  Serial.println(fileContent);
-
-  file.close();
-  return fileContent;
-}
-
-void terminalPrint(String msg) {
-  terminal.print(msg);
-  terminal.flush();
-}
-
-void terminalPrintln(String msg) {
-  terminal.println(msg);
-  terminal.flush();
-}
-
-void blynk_setup()
-{
-  Blynk.config(auth);
-  Blynk.virtualWrite(V2, " ");
-  Blynk.virtualWrite(V4, " ");
-  //  Blynk.virtualWrite(V3, "clr");
-}
-
-void spiffs_setup()
-{
-  //Inicia lectura del archivo
-  SPIFFS.begin();
-}
-
-void server_setup()
-{
-  config_rest_server_routing();
-  server.begin();
-}
-
-/******************************* SETUP ******************************/
