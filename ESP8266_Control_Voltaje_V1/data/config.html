@@ -14,10 +14,10 @@ button { font-weight: bold; font-size: width/2pt; }
 
 function validarForm() {
 
-    var ssid = document.forms["configForm"]["ssid"].value;
-    var password = document.forms["configForm"]["Password"].value;
-    var ip = document.forms["configForm"]["IP"].value;
-    var gw = document.forms["configForm"]["GW"].value;
+    var ssid = document.getElementById("ssid").value;
+    var password = document.getElementById("Password").value;
+    var ip = document.getElementById("IP").value;
+    var gw = document.getElementById("GW").value;
 
     if (ssid==null || ssid=="" || 
 		password==null || password=="" ||
@@ -29,7 +29,6 @@ function validarForm() {
 	} else {
 		return true;
 	}
-
 }
 
 </script>
@@ -38,22 +37,22 @@ function validarForm() {
 <h1>CONFIGURACION ESP8266 CONTROLADOR DE VOLTAJE V.1.0 by Sergycg</h1>
 <canvas id="remote"></canvas>
 <h2>
-<FORM action="/config" name="configForm" method="post" onSubmit="return validaForm();">
+<FORM action="/config" name="configForm" method="post" onSubmit="return validarForm();">
 <P>
 	<label>ssid:&nbsp;</label>
-	<input maxlength="30" name="ssid" value="{{ssid_value}}"><br>
+	<input maxlength="30" id="ssid" name="ssid" value="{{ssid_value}}"><br>
 	
 	<label>Password:&nbsp;</label>
-	<input maxlength="30" name="Password" value="{{password_value}}"><br>
+	<input maxlength="30" name="Password" id="Password" value="{{password_value}}"><br>
 	
 	<label>IP:&nbsp;</label>
-	<input maxlength="15" name="IP" value="{{ip_value}}"><br>
+	<input maxlength="15" name="IP" id="IP" value="{{ip_value}}"><br>
 	
 	<label>Gateway:&nbsp;</label>
-	<input maxlength="3" name="GW" value="{{gw_value}}"><br>
+	<input maxlength="3" name="GW" id="GW" value="{{gw_value}}"><br>
 	
 <INPUT type="submit" value="Enviar"> 
-<INPUT type="reset" value="Limpiar">
+<INPUT type="reset">
 </P>
 </FORM>
 </h2>
