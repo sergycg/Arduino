@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CONFIGURACION ESP8266 CONTROLADOR DE VOLTAJE V.1.0 by Sergycg</title>
+<meta name="viewport" content="width=device-width, inicioial-scale=0.7, maximum-scale=0.7">
+<meta charset="utf-8">
+<style>
+body { text-align: center; font-size: width/2pt; }
+h1 { font-weight: bold; font-size: width/2pt; }
+h2 { font-weight: bold; font-size: width/2pt; }
+button { font-weight: bold; font-size: width/2pt; }
+</style>
+<script>
+
+function validarForm() {
+
+    var ssid = document.getElementById("ssid").value;
+    var password = document.getElementById("Password").value;
+    var ip = document.getElementById("IP").value;
+    var gw = document.getElementById("GW").value;
+
+    if (ssid==null || ssid=="" || 
+		password==null || password=="" ||
+		ip==null || ip=="" ||
+		gw==null || gw=="") { 
+	
+		alert("Faltan campos por rellenar del formulario");
+        return false; 
+	} else {
+		return true;
+	}
+}
+
+</script>
+</head>
+<body>
+<h1>CONFIGURACION ESP8266 CONTROLADOR DE VOLTAJE V.1.0 by Sergycg</h1>
+<canvas id="remote"></canvas>
+<h2>
+<FORM action="/config" name="configForm" method="post" onSubmit="return validarForm();">
+<P>
+	<label>ssid:&nbsp;</label>
+	<input maxlength="30" id="ssid" name="ssid" value="{{ssid_value}}"><br>
+	
+	<label>Password:&nbsp;</label>
+	<input maxlength="30" name="Password" id="Password" value="{{password_value}}"><br>
+	
+	<label>IP:&nbsp;</label>
+	<input maxlength="15" name="IP" id="IP" value="{{ip_value}}"><br>
+	
+	<label>Gateway:&nbsp;</label>
+	<input maxlength="3" name="GW" id="GW" value="{{gw_value}}"><br>
+	
+<INPUT type="submit" value="Enviar"> 
+<INPUT type="reset">
+</P>
+</FORM>
+</h2>
+
+</body>
+</html>
