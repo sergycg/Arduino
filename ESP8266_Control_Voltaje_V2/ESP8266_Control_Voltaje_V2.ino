@@ -17,6 +17,22 @@
 #include <FS.h>
 //#include "ESPAsyncWebServer.h"
 #include <EEPROM.h>
+/*#include <Ticker.h>
+
+  // Instancia a la clase Ticker
+  Ticker ticker;
+
+  // Pin LED azul
+  byte pinLed = D4;
+  // Empezamos el temporizador que hará parpadear el LED
+  ticker.attach(0.2, parpadeoLed);
+
+    // Eliminamos el temporizador (ponerlo en la parte del codigo donde queramos cerrar el temporizador)
+  ticker.detach();
+
+*/
+
+
 
 ESP8266WebServer server(80);
 //AsyncWebServer server(80);
@@ -30,8 +46,8 @@ char auth[] = "HAKp6xw09rLSbciJShiSduxMshF2b_s8";
 String ssid = "MOVISTAR_2957";
 String pass = "61BB34D737589D4D1166";
 
-const char ssid_AP[] = "NodeMCU-ESP8266";    //Definimos la SSDI de nuestro servidor WiFi -nombre de red- 
-const char password_AP[] = "12345678";       //Definimos la contraseña de nuestro servidor 
+const char ssid_AP[] = "NodeMCU-ESP8266";    //Definimos la SSDI de nuestro servidor WiFi -nombre de red-
+const char password_AP[] = "12345678";       //Definimos la contraseña de nuestro servidor
 
 
 //byte arduino_mac[] = { 0x5C, 0xCF, 0x7F, 0xD0, 0x0E, 0xF8 };
@@ -62,7 +78,9 @@ void setup()
 
   // CONFIGURACION INICIAL
   //  clear_EEPROM();
-  //  write_to_Memory(String(ssid), String(pass), IpAddress2String(arduino_ip), IpAddress2String(gateway_ip));
+  //  EEPROM.commit();
+  //  delay(2000);
+  //  write_to_Memory(String(INICIO), String(ssid), String(pass), IpAddress2String(arduino_ip), IpAddress2String(gateway_ip));
   //  delay(2000);
 
   // OBTENER CONFIGURACION
@@ -87,7 +105,7 @@ void setup()
       Serial.print("Inicializando...");
       veces = 0;
       WIFI_AP_STA_setup();
-      blynk_setup();
+      //blynk_setup();
       spiffs_setup();
       server_setup();
       delay(3000);
@@ -118,7 +136,7 @@ void loop()
     case INICIO:
     case LUZ_APAGADA:
     case LUZ_ENCENDIDA:
-      Blynk.run();
+      //Blynk.run();
       timer.run();
       server.handleClient();
       break;
@@ -160,11 +178,21 @@ void VCCInput() {
 
 String IpAddress2String(const IPAddress & ipAddress)
 {
-  return String(ipAddress[0]) + String(".") + \
+    return String(ipAddress[0]) + String(".") + \
          String(ipAddress[1]) + String(".") + \
          String(ipAddress[2]) + String(".") + \
          String(ipAddress[3])  ;
 }
+
+
+/*
+  void parpadeoLed(){
+  // Cambiar de estado el LED
+  byte estado = digitalRead(pinLed);
+  digitalWrite(pinLed, !estado);
+  }
+*/
+
 
 //FUNCION PARA CARGAR EL ARCHIVO DEL SERVIDOR WEB index.html
 /*bool handleFileRead(String path) {

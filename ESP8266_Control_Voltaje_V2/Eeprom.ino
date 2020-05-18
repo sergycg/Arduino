@@ -1,5 +1,5 @@
-void write_to_Memory(String _ssid, String _passw, String _ip, String _gateway) {
-  String toWrite = _ssid + ";" + _passw + ";" + _ip + ";" + _gateway + ";";
+void write_to_Memory(String _modo, String _ssid, String _passw, String _ip, String _gateway) {
+  String toWrite = _modo + ";" + _ssid + ";" + _passw + ";" + _ip + ";" + _gateway + ";";
   write_EEPROM(toWrite, 0);
   EEPROM.commit();
 }
@@ -9,6 +9,14 @@ void write_EEPROM(String x, int pos) {
   for (int n = pos; n < x.length() + pos; n++) {
     EEPROM.write(n, x[n - pos]);
   }
+}
+
+void writeAndReset() {
+  EEPROM.begin(512);
+  write_to_Memory(String(INICIO), String(ssid), String(pass), IpAddress2String(arduino_ip), IpAddress2String(gateway_ip));
+  delay(2000);
+  EEPROM.end();
+  softReset();
 }
 
 void clear_EEPROM() {
