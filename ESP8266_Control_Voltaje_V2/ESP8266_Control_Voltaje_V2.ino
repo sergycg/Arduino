@@ -17,13 +17,15 @@
 #include <FS.h>
 //#include "ESPAsyncWebServer.h"
 #include <EEPROM.h>
-/*#include <Ticker.h>
+#include <Ticker.h>
 
-  // Instancia a la clase Ticker
-  Ticker ticker;
+// Instancia a la clase Ticker
+Ticker ticker;
 
-  // Pin LED azul
-  byte pinLed = D4;
+// Pin LED azul
+byte pinLed = D4;
+
+/*
   // Empezamos el temporizador que hará parpadear el LED
   ticker.attach(0.2, parpadeoLed);
 
@@ -72,14 +74,16 @@ void setup()
   //estado = INICIO;
   Serial.println();
 
+  // Empezamos el temporizador que hará parpadear el LED
+  ticker.attach(0.05, parpadeoLed);
 
   // CARGAR CONFIGURACION DE LA EEPROM
   EEPROM.begin(512);
 
   // CONFIGURACION INICIAL
-  //  clear_EEPROM();
-  //  EEPROM.commit();
-  //  delay(2000);
+  //clear_EEPROM();
+  //EEPROM.commit();
+  //delay(2000);
   //  write_to_Memory(String(INICIO), String(ssid), String(pass), IpAddress2String(arduino_ip), IpAddress2String(gateway_ip));
   //  delay(2000);
 
@@ -87,12 +91,14 @@ void setup()
   read_EEPROM();
 
   EEPROM.end();
-  delay(2000);
+  delay(5000);
 
   switch (estado) {
     case CONFIG:
       Serial.println("MODO AP");
       Serial.print("Inicializando...");
+      // Empezamos el temporizador que hará parpadear el LED
+      ticker.attach(0.2, parpadeoLed);
       veces = 0;
       WIFI_AP_setup();
       spiffs_setup();
@@ -101,15 +107,20 @@ void setup()
       break;
 
     case INICIO:
-      Serial.println("MODO AP+STA");
+       // Empezamos el temporizador que hará parpadear el LED
+      ticker.attach(0.5, parpadeoLed);
+      Serial.println("MODO STA");
       Serial.print("Inicializando...");
       veces = 0;
-      WIFI_AP_STA_setup();
+      WIFI_STA_setup();
       //blynk_setup();
       spiffs_setup();
       server_setup();
       delay(3000);
       timer.setInterval(1000L, VCCInput);
+      // Eliminamos el temporizador (ponerlo en la parte del codigo donde queramos cerrar el temporizador)
+      ticker.detach();
+      digitalWrite(D4, LOW);
       break;
 
     default:
@@ -144,86 +155,3 @@ void loop()
     default: break;
   }
 }
-
-
-void VCCInput() {
-  Blynk.virtualWrite(V2, ESP.getVcc() * 0.001);
-
-  float sensorValue = analogRead(A0);
-  //float voltaje = (5 * sensorValue * (R1 + R2)) / (1024 * R2);
-  //voltaje = (5 * sensorValue) / 1024;
-  //voltaje = voltaje / (R2/(R1+R2));
-  float voltaje = sensorValue * 0.0145;
-
-  Blynk.virtualWrite(V4, voltaje);
-  if (voltaje < 0.75) {
-    veces++;
-    Blynk.setProperty(V4, "color", "#D3435C"); //ROJO
-    if (veces > 5 && estado != LUZ_APAGADA) {
-      terminalPrintln("SE HA IDO LA LUZ...");
-      Blynk.email("sergio.camacho@telefonica.net", "Subject: Luz Apagada", "Se ha ido la luz.");
-      estado = LUZ_APAGADA;
-    }
-  } else {
-    Blynk.setProperty(V4, "color", "#00FF7F"); //VERDE
-    if (veces > 5 &&  estado != LUZ_ENCENDIDA) {
-      terminalPrintln("SE HA RESTAURADO LA LUZ...");
-      Blynk.email("sergio.camacho@telefonica.net", "Subject: Luz Encendida", "Se ha restaurado la luz.");
-      estado = LUZ_ENCENDIDA;
-    }
-    veces = 0;
-  }
-
-}
-
-String IpAddress2String(const IPAddress & ipAddress)
-{
-    return String(ipAddress[0]) + String(".") + \
-         String(ipAddress[1]) + String(".") + \
-         String(ipAddress[2]) + String(".") + \
-         String(ipAddress[3])  ;
-}
-
-
-/*
-  void parpadeoLed(){
-  // Cambiar de estado el LED
-  byte estado = digitalRead(pinLed);
-  digitalWrite(pinLed, !estado);
-  }
-*/
-
-
-//FUNCION PARA CARGAR EL ARCHIVO DEL SERVIDOR WEB index.html
-/*bool handleFileRead(String path) {
-  //#ifdef DEBUG
-  Serial.println("handleFileRead: " + path);
-  //#endif
-  //if(path.endsWith("/")) path += "index.html";
-  if (SPIFFS.exists(path)) {
-    File file = SPIFFS.open(path, "r");
-
-    size_t sent = server.streamFile(file, getContentType(path));
-    file.close();
-    return true;
-  }
-  return false;
-  }
-
-
-  String readFile(fs::FS &fs, const char * path) {
-  Serial.printf("Reading file: %s\r\n", path);
-  File file = fs.open(path, "r");
-  if (!file || file.isDirectory()) {
-    Serial.println("- empty file or failed to open file");
-    return String();
-  }
-  Serial.println("- read from file:");
-  String fileContent;
-  while (file.available()) {
-    fileContent += String((char)file.read());
-  }
-  Serial.println(fileContent);
-  return fileContent;
-  }
-*/

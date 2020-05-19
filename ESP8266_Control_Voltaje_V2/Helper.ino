@@ -1,21 +1,85 @@
+
+void VCCInput() {
+  Blynk.virtualWrite(V2, ESP.getVcc() * 0.001);
+
+  float sensorValue = analogRead(A0);
+  //float voltaje = (5 * sensorValue * (R1 + R2)) / (1024 * R2);
+  //voltaje = (5 * sensorValue) / 1024;
+  //voltaje = voltaje / (R2/(R1+R2));
+  float voltaje = sensorValue * 0.0145;
+
+  Blynk.virtualWrite(V4, voltaje);
+  if (voltaje < 0.75) {
+    veces++;
+    Blynk.setProperty(V4, "color", "#D3435C"); //ROJO
+    if (veces > 5 && estado != LUZ_APAGADA) {
+      terminalPrintln("SE HA IDO LA LUZ...");
+      Blynk.email("sergio.camacho@telefonica.net", "Subject: Luz Apagada", "Se ha ido la luz.");
+      estado = LUZ_APAGADA;
+    }
+  } else {
+    Blynk.setProperty(V4, "color", "#00FF7F"); //VERDE
+    if (veces > 5 &&  estado != LUZ_ENCENDIDA) {
+      terminalPrintln("SE HA RESTAURADO LA LUZ...");
+      Blynk.email("sergio.camacho@telefonica.net", "Subject: Luz Encendida", "Se ha restaurado la luz.");
+      estado = LUZ_ENCENDIDA;
+    }
+    veces = 0;
+  }
+
+}
+
+String IpAddress2String(const IPAddress & ipAddress)
+{
+  return String(ipAddress[0]) + String(".") + \
+         String(ipAddress[1]) + String(".") + \
+         String(ipAddress[2]) + String(".") + \
+         String(ipAddress[3])  ;
+}
+
+void parpadeoLed() {
+  // Cambiar de estado el LED
+  byte estado = digitalRead(pinLed);
+  digitalWrite(pinLed, !estado);
+}
+
+void terminalPrint(String msg) {
+  terminal.print(msg);
+  terminal.flush();
+}
+
+void terminalPrintln(String msg) {
+  terminal.println(msg);
+  terminal.flush();
+}
+
+void softReset() {
+  ESP.reset();
+}
+
+
+
+
+
+
 /*const int numParams = 2;
 
-void readParams(String (& params) [numParams])
+  void readParams(String (& params) [numParams])
   {
   params [0] = "foo";
   params [1] = "bar";
   }
 
-void setup() 
-{
+  void setup()
+  {
   Serial.begin (115200);
   String params [numParams];
   readParams (params);
   for (int i = 0; i < numParams; i++)
     Serial.println (params [i]);
-}
+  }
 
-void loop() { }*/
+  void loop() { }*/
 
 
 
@@ -83,7 +147,7 @@ void loop() { }*/
   }
 
 
-void config_rest_server_routing() {
+  void config_rest_server_routing() {
 
   server.onNotFound(handleWebRequests); //Set setver all paths are not found so we can handle as per URI
   server.on("/config", HTTP_POST, []() {
@@ -129,7 +193,40 @@ void config_rest_server_routing() {
       server.send(404, "text/plain", "Archivo no encontrado");
     });
 
-}
+  }
 
-  
+  //FUNCION PARA CARGAR EL ARCHIVO DEL SERVIDOR WEB index.html
+  bool handleFileRead(String path) {
+  //#ifdef DEBUG
+  Serial.println("handleFileRead: " + path);
+  //#endif
+  //if(path.endsWith("/")) path += "index.html";
+  if (SPIFFS.exists(path)) {
+    File file = SPIFFS.open(path, "r");
+
+    size_t sent = server.streamFile(file, getContentType(path));
+    file.close();
+    return true;
+  }
+  return false;
+  }
+
+
+  String readFile(fs::FS &fs, const char * path) {
+  Serial.printf("Reading file: %s\r\n", path);
+  File file = fs.open(path, "r");
+  if (!file || file.isDirectory()) {
+    Serial.println("- empty file or failed to open file");
+    return String();
+  }
+  Serial.println("- read from file:");
+  String fileContent;
+  while (file.available()) {
+    fileContent += String((char)file.read());
+  }
+  Serial.println(fileContent);
+  return fileContent;
+  }
+
+
 */

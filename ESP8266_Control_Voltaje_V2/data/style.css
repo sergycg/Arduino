@@ -7,8 +7,8 @@
     font-family: 'Audiowide';
     font-style: normal;
     font-weight: 400;
-    src: local('Audiowide Regular'), local('Audiowide-Regular'), url(https://fonts.gstatic.com/s/audiowide/v8/l7gdbjpo0cum0ckerWCdmA_OIxo.woff2) format('woff2');
-    /* src: local('Audiowide Regular'), local('Audiowide-Regular'), url(l7gdbjpo0cum0ckerWCdmA_OIxo.woff2) format('woff2'); */
+    /* src: local('Audiowide Regular'), local('Audiowide-Regular'), url(https://fonts.gstatic.com/s/audiowide/v8/l7gdbjpo0cum0ckerWCdmA_OIxo.woff2) format('woff2'); */
+    src: local('Audiowide Regular'), local('Audiowide-Regular'), url(_OIxo.woff2) format('woff2');
     unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
@@ -19,8 +19,8 @@
     font-family: 'Audiowide';
     font-style: normal;
     font-weight: 400;
-    src: local('Audiowide Regular'), local('Audiowide-Regular'), url(https://fonts.gstatic.com/s/audiowide/v8/l7gdbjpo0cum0ckerWCdlg_O.woff2) format('woff2');
-    /* src: local('Audiowide Regular'), local('Audiowide-Regular'), url(l7gdbjpo0cum0ckerWCdlg_O.woff2) format('woff2'); */
+    /* src: local('Audiowide Regular'), local('Audiowide-Regular'), url(https://fonts.gstatic.com/s/audiowide/v8/l7gdbjpo0cum0ckerWCdlg_O.woff2) format('woff2'); */
+    src: local('Audiowide Regular'), local('Audiowide-Regular'), url(_O.woff2) format('woff2');
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -190,7 +190,7 @@ form {
     border-radius: .4em;
     bottom: 0;
     box-shadow: 0 5px 10px 5px rgba(0, 0, 0, 0.2);
-    height: 420px;
+    height: 380px;
     left: 0;
     margin: auto;
     overflow: hidden;
@@ -359,7 +359,7 @@ input[type=button] {
 }
 
 .reset {
-    background: #04883e;
+    background: #fb0;
     border: 1px solid rgba(0, 0, 0, 0.4);
     border-radius: .3em;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 10px 10px rgba(255, 255, 255, 0.1);
@@ -518,4 +518,60 @@ input[type="checkbox"]:checked~.checkbox {
     100% {
         text-shadow: 0 0 2.5px #fff, 0 0 5px #fff, 0 0 7.5px #fff, 0 0 10px #B6FF00, 0 0 17.5px #B6FF00, 0 0 20px #B6FF00, 0 0 25px #B6FF00, 0 0 37.5px #B6FF00;
     }
+}
+
+@keyframes gjPulse {
+    0% {
+        width: 100px;
+        height: 100px;
+    }
+    25% {
+        width: 115px;
+        height: 115px;
+    }
+    50% {
+        width: 130px;
+        height: 130px;
+    }
+    75% {
+        width: 110px;
+        height: 110px;
+    }
+    100% {
+        width: 90px;
+        height: 90px;
+    }
+}
+
+#gj-counter-box {
+    margin: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    opacity: 0.2;
+    width: 90px;
+    height: 90px;
+    background-color: rgb(183, 0, 0);
+    border-radius: 50%;
+    border: 6px solid white;
+    visibility: none;
+    display: none;
+    animation: gjPulse 1s linear infinite;
+}
+
+#gj-counter-box:hover {
+    opacity: 1;
+    cursor: pointer;
+}
+
+#gj-counter-num {
+    position: relative;
+    text-align: center;
+    margin: 0px;
+    padding: 0px;
+    top: 50%;
+    transform: translate(0%, -50%);
+    color: white;
 }

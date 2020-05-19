@@ -12,6 +12,8 @@
         $(document).ready(function() {
             $('#reinicio').hide();
             getDefaultData();
+            var gjCountAndRedirectStatus = false; //prevent from seting multiple Interval
+
 
 
             // var state = false;
@@ -51,8 +53,17 @@
 
                     }
                 });
-                var url = "http://" + $('#IP').val() + "/config.html";
-                $(location).attr('href', url);
+                $('#reset').attr("disabled", true);
+                $('#go').attr("disabled", true);
+                $('#escanear').attr("disabled", true);
+                if (gjCountAndRedirectStatus == false) {
+                    gjCountAndRedirect(20, "http://" + $('#IP').val() + "/config.html");
+                    gjCountAndRedirectStatus = true;
+                }
+                // setTimeout(function() {
+                //     window.location.href = "http://" + $('#IP').val() + "/config.html"
+                // }, 20000);
+
             });
 
 
@@ -73,14 +84,19 @@
                             GW: $('#GW').val()
                         },
                         success: function(bean) {
+                            $('#accesspanel').height(440);
                             $('#reinicio').show();
                             $('#go').addClass("success");
                             $('#go').val("Enviado");
+                            $('#ipRedirect').html($('#IP').val());
+
                         },
                         error: function(xhr, ajaxOptions, thrownError) {
                             $('#litheader').removeClass();
                             $('#go').addClass("denied");
                             $('#go').val("Error");
+                            $('#accesspanel').height(380);
+                            $('#reinicio').hide();
                         }
                     });
                 }
@@ -89,7 +105,24 @@
 
         });
 
-
+        // FUNCTION CODE
+        function gjCountAndRedirect(secounds, url) {
+            $('#gj-counter-num').text(secounds);
+            $('#gj-counter-box').show();
+            var interval = setInterval(function() {
+                secounds = secounds - 1;
+                $('#gj-counter-num').text(secounds);
+                if (secounds == 0) {
+                    clearInterval(interval);
+                    window.location = url;
+                    $('#gj-counter-box').hide();
+                }
+            }, 1000);
+            $('#gj-counter-box').click(function() {
+                clearInterval(interval);
+                window.location = url;
+            });
+        }
 
         function validarForm() {
             var ssid = document.getElementById("ssid").value;
@@ -245,7 +278,7 @@
                 <select id="ssid" name="ssid" value="" placeholder="ssid"> 
                   <option>Seleccione SSID</option>
                 </select>
-                <button class="escanear" type="button" onclick="getRedesDisponibles()"><span id="loading"><img src="ajax-loader.gif"></span><span id="texto_loading">Escanear Redes</span></button>
+                <button id="escanear" class="escanear" type="button" onclick="getRedesDisponibles()"><span id="loading"><img src="ajax-loader.gif"></span><span id="texto_loading">Escanear Redes</span></button>
             </p>
             <p>
                 <input type="text" name="Password" id="Password" placeholder="Password">
@@ -261,10 +294,22 @@
             <input type="button" id="go" name="go" value="Enviar">
         </p>
 
-        <p id="reinicio" style="text-align: center;">
-            <span class="texto_reinicio">Debe reiniciar la placa para aplicar los cambios</span>
-            <button id="reset" class="reset" type="button">Reiniciar</button>
-        </p>
+        <div id="reinicio" style="text-align: center;">
+            <p>
+                <div>
+                    <span class="texto_reinicio">Debe reiniciar la placa para aplicar los cambios</span>
+                    <button type="button" id="reset" class="reset">Reiniciar</button>
+
+                </div>
+                <div id="gj-counter-box">
+                    <h1 id="gj-counter-num"></h1>
+                </div>
+
+                <div>
+                    <span class="texto_reinicio">Después de reiniciar serás redireccionado a la IP: </span><span id="ipRedirect"></span>
+                </div>
+            </p>
+        </div>
     </form>
 </body>
 
