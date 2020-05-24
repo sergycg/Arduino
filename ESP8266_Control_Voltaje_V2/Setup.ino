@@ -33,12 +33,52 @@ void WIFI_AP_setup() {
   IPAddress subnet_AP(255, 255, 255, 0);
   WiFi.softAPConfig(ip_AP, gateway_AP, subnet_AP);
   Serial.println();
+  Serial.print("Inicializando modo AP...");
+  Serial.println();
   Serial.print("Direccion IP Access Point - por defecto: ");
   Serial.println(WiFi.softAPIP());
   Serial.print("Direccion MAC Access Point: ");
   Serial.println(WiFi.softAPmacAddress());
 
 
+}
+
+void WIFI_AP_STA_setup() {
+
+  WiFi.mode(WIFI_AP_STA);
+
+  WiFi.softAP(ssid_AP, password_AP);      //Red con clave, en el canal 1 y visible
+  IPAddress ip_AP(192, 168, 4, 242);      //Modifica la dirección IP
+  IPAddress gateway_AP(192, 168, 4, 1);
+  IPAddress subnet_AP(255, 255, 255, 0);
+  WiFi.softAPConfig(ip_AP, gateway_AP, subnet_AP);
+
+  Serial.println("********************* MODO AP *************************");
+  Serial.print("Inicializando modo AP...");
+  Serial.println();
+  Serial.print("Direccion IP Access Point - por defecto: ");
+  Serial.println(WiFi.softAPIP());
+  Serial.print("Direccion MAC Access Point: ");
+  Serial.println(WiFi.softAPmacAddress());
+  Serial.println();
+  Serial.println("********************* MODO STA ************************");
+  Serial.print("Inicializando modo STA...");
+  WiFi.config(arduino_ip, dns_ip, gateway_ip, subnet_mask);
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  WiFi.setAutoReconnect(true);
+
+  Serial.println();
+  Serial.println("WiFi conectada.");
+  Serial.println();
+  WiFi.printDiag(Serial);
+  Serial.println();
+  Serial.print("STA dirección IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.println("*******************************************************");
 }
 
 String WIFI_escanear_redes() {

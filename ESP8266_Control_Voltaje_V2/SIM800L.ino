@@ -1,24 +1,11 @@
-#include <SoftwareSerial.h>
-
-SoftwareSerial SIM800L(D8, D7); //Seleccionamos los pines D8 como Rx y D7 como Tx. PIN D7 de arduino con RX de la SIM800L y PIN D8 de arduino con TX de la SIM800L
-
-// Ademas es necesario que los 5V y GND de arduino esten conectados al pin de 5V y GND de la SIM900
-
-
-void setup()
+void wakeUp()
 {
-  // SIM800L PWK pin is conected to D1
-  pinMode(D1, OUTPUT);
-  digitalWrite(D1, HIGH);
+    // SIM800L PWK pin is conected to PIN_SIM800L_ON_OFF
+  digitalWrite(PIN_SIM800L_ON_OFF, HIGH);
 
-  // SIM900.begin(19200);
-  // delay(1000);
   Serial.begin(19200);
-  Serial.println("setup llamada...");
+  Serial.println("SIM800L OFF -> Encendiendo...");
 
-
-  // switching on SIM800L by powering down PWK pin for a second
-  //digitalWrite(D0, LOW);
   delay(1000);
 
   //SIM900.begin(19200);
@@ -27,34 +14,14 @@ void setup()
   SIM800L.begin(19200);
   delay(5000);
 
-  digitalWrite(D1, LOW);
-  Serial.println("setup llamada2...");
+  digitalWrite(PIN_SIM800L_ON_OFF, LOW);
+  Serial.println("SIM800L ON -> Encendiendo...");
   delay(20000);
-  Serial.println("enviando SMS...");
-  int8_t answer1;
-  answer1 = sendATcommand("AT", "OK", 2000);
-  if (answer1 == 1)
-  {
-    Serial.print("Sent AT ");
-  }
-  else
-  {
-    Serial.print("error ");
-  }
-  //SendTextMessage2();
-  //call();
+  Serial.println("SIM800L ON");
 }
 
-void loop()
-{
 
-  if (SIM800L.available())
-    Serial.write(SIM800L.read());
-  if (Serial.available())
-    SIM800L.write(Serial.read());
-}
-
-void call()
+void call() 
 {
   delay(20000);
   Serial.println("Realizando llamada...");
@@ -68,7 +35,7 @@ void call()
 void SendTextMessage()
 {
   Serial.println("prueba");
-  // SIM800L.print("AT+CMGF=1\r");
+ // SIM800L.print("AT+CMGF=1\r");
   SIM800L.println("AT+CMGF=1");
   delay(1000);
   //SIM800L.println("AT+CMGS = \"+34654161878\"");

@@ -72,9 +72,6 @@ void handleConfigSubmit() { //dispaly values and write to memmory
   arduino_ip.fromString(String(server.arg("IP")));
   gateway_ip.fromString(String(server.arg("GW")));
 
-  // Eliminamos el temporizador (ponerlo en la parte del codigo donde queramos cerrar el temporizador)
-  ticker.detach();
-
   /*String response = "<p>The ssid is ";
     response += server.arg("ssid");
     response += "<br>";

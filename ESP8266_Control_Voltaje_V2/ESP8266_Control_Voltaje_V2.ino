@@ -6,6 +6,9 @@
 #define LUZ_APAGADA 2
 #define LUZ_ENCENDIDA 3
 
+#define PIN_LED D4
+#define PIN_SIM800L_ON_OFF D1
+
 #define NUM_PARAMS 5
 #define BLYNK_PRINT Serial
 
@@ -18,12 +21,15 @@
 //#include "ESPAsyncWebServer.h"
 #include <EEPROM.h>
 #include <Ticker.h>
+#include <SoftwareSerial.h>
+
+SoftwareSerial SIM800L(D8, D7); //Seleccionamos los pines D8 como Rx y D7 como Tx. PIN D7 de arduino con RX de la SIM800L y PIN D8 de arduino con TX de la SIM800L
 
 // Instancia a la clase Ticker
 Ticker ticker;
 
 // Pin LED azul
-byte pinLed = D4;
+byte pinLed = PIN_LED;
 
 /*
   // Empezamos el temporizador que hará parpadear el LED
@@ -33,8 +39,6 @@ byte pinLed = D4;
   ticker.detach();
 
 */
-
-
 
 ESP8266WebServer server(80);
 //AsyncWebServer server(80);
@@ -70,12 +74,14 @@ void setup()
 {
 
   Serial.begin(9600);
-  pinMode(D4, OUTPUT);
+  pinMode(PIN_LED, OUTPUT);     
+  pinMode(PIN_SIM800L_ON_OFF, OUTPUT); // SIM800L PWK pin is conected to D1
+  digitalWrite(PIN_SIM800L_ON_OFF, HIGH);
+  
   //estado = INICIO;
   Serial.println();
 
-  // Empezamos el temporizador que hará parpadear el LED
-  ticker.attach(0.05, parpadeoLed);
+  ticker.attach(0.05, parpadeoLed); // Empezamos el temporizador que hará parpadear el LED
 
   // CARGAR CONFIGURACION DE LA EEPROM
   EEPROM.begin(512);
@@ -92,13 +98,14 @@ void setup()
 
   EEPROM.end();
   delay(5000);
+  Serial.println();
 
   switch (estado) {
     case CONFIG:
-      Serial.println("MODO AP");
-      Serial.print("Inicializando...");
-      // Empezamos el temporizador que hará parpadear el LED
-      ticker.attach(0.2, parpadeoLed);
+      Serial.println("*******************************************************");
+      Serial.println("*                        MODO AP                      *");
+      Serial.println("*******************************************************");
+      ticker.attach(0.2, parpadeoLed); // Empezamos el temporizador que hará parpadear el LED
       veces = 0;
       WIFI_AP_setup();
       spiffs_setup();
@@ -107,33 +114,35 @@ void setup()
       break;
 
     case INICIO:
-       // Empezamos el temporizador que hará parpadear el LED
-      ticker.attach(0.5, parpadeoLed);
-      Serial.println("MODO STA");
-      Serial.print("Inicializando...");
+      ticker.attach(0.5, parpadeoLed); // Empezamos el temporizador que hará parpadear el LED
+      Serial.println("*******************************************************");
+      Serial.println("*                    MODO AP+STA                      *");
+      Serial.println("*******************************************************");
       veces = 0;
-      WIFI_STA_setup();
-      //blynk_setup();
+      WIFI_AP_STA_setup();
+      blynk_setup();
       spiffs_setup();
       server_setup();
       delay(3000);
       timer.setInterval(1000L, VCCInput);
-      // Eliminamos el temporizador (ponerlo en la parte del codigo donde queramos cerrar el temporizador)
-      ticker.detach();
-      digitalWrite(D4, LOW);
+      ticker.detach(); // Eliminamos el temporizador (ponerlo en la parte del codigo donde queramos cerrar el temporizador)
+      digitalWrite(PIN_LED, LOW); // dejamos el led encendido
       break;
 
     default:
-      EEPROM.begin(512);
-      clear_EEPROM();
-      delay(3000);
-      write_EEPROM(String(CONFIG), 0);
-      delay(3000);
-      EEPROM.end();
-      delay(4000);
-      softReset();
+      /*EEPROM.begin(512);
+        clear_EEPROM();
+        delay(3000);
+        write_EEPROM(String(CONFIG), 0);
+        delay(3000);
+        EEPROM.end();
+        delay(4000);
+        softReset();*/
+      restaurar_valores_fabrica();
       break;
   }
+
+
 }
 
 
@@ -147,11 +156,12 @@ void loop()
     case INICIO:
     case LUZ_APAGADA:
     case LUZ_ENCENDIDA:
-      //Blynk.run();
+      Blynk.run();
       timer.run();
       server.handleClient();
       break;
 
     default: break;
   }
+
 }

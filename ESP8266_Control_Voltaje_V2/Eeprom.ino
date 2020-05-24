@@ -16,16 +16,25 @@ void writeAndReset() {
   write_to_Memory(String(INICIO), String(ssid), String(pass), IpAddress2String(arduino_ip), IpAddress2String(gateway_ip));
   delay(2000);
   EEPROM.end();
+  delay(1000);
+  softReset();
+}
+
+void restaurar_valores_fabrica() {
+  EEPROM.begin(512);
+  clear_EEPROM();
+  EEPROM.commit();
+  delay(2000);
+  EEPROM.end();
+  delay(2000);
   softReset();
 }
 
 void clear_EEPROM() {
-  //  EEPROM.begin(512);
   // write a 0 to all 512 bytes of the EEPROM
   for (int i = 0; i < 512; i++) {
     EEPROM.write(i, 0);
   }
-  //  EEPROM.end();
 }
 
 void read_EEPROM() {
@@ -48,8 +57,8 @@ void read_EEPROM() {
 
   }
   //Serial.println("Your SSID: " + String(string_Value));
-//  result[0].toCharArray(ssid, result[0].length() + 1);
-//  result[1].toCharArray(pass, result[1].length() + 1);
+  //  result[0].toCharArray(ssid, result[0].length() + 1);
+  //  result[1].toCharArray(pass, result[1].length() + 1);
   estado = result[0].toInt();
   ssid = result[1];
   pass = result[2];
