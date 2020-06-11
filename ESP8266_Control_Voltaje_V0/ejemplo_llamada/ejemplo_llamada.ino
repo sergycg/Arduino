@@ -1,4 +1,5 @@
 #include <SoftwareSerial.h>
+#define TIMEOUT 10000
 
 SoftwareSerial SIM800L(D8, D7); //Seleccionamos los pines D8 como Rx y D7 como Tx. PIN D7 de arduino con RX de la SIM800L y PIN D8 de arduino con TX de la SIM800L
 
@@ -26,21 +27,22 @@ void setup()
 
   SIM800L.begin(19200);
   delay(5000);
-
-  digitalWrite(D1, LOW);
-  Serial.println("setup llamada2...");
-  delay(20000);
-  Serial.println("enviando SMS...");
-  int8_t answer1;
-  answer1 = sendATcommand("AT", "OK", 2000);
-  if (answer1 == 1)
-  {
+  power_on();
+  Serial.println("Conectado!!");
+  /*digitalWrite(D1, LOW);
+    Serial.println("setup llamada2...");
+    delay(20000);
+    Serial.println("enviando SMS...");
+    int8_t answer1;
+    answer1 = sendATcommand("AT", "OK", 2000);
+    if (answer1 == 1)
+    {
     Serial.print("Sent AT ");
-  }
-  else
-  {
+    }
+    else
+    {
     Serial.print("error ");
-  }
+    }*/
   //SendTextMessage2();
   //call();
 }
@@ -54,6 +56,32 @@ void loop()
     SIM800L.write(Serial.read());
 }
 
+
+void power_on()
+{
+
+  uint8_t answer = 0;
+
+  Serial.println("On Power_on...");
+
+  // checks if the module is started
+  answer = sendATcommand("AT\r\n", "OK\r\n", TIMEOUT);
+  if (answer == 0)
+  {
+    // power on pulse
+    digitalWrite(D1, HIGH);
+    delay(3000);
+    digitalWrite(D1, LOW);
+
+    // waits for an answer from the module
+    while (answer == 0)
+    {
+      // Send AT every two seconds and wait for the answer
+      answer = sendATcommand("AT\r\n", "OK\r\n", TIMEOUT);
+      Serial.println("Trying connection with module...");
+    }
+  }
+}
 void call()
 {
   delay(20000);

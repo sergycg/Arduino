@@ -29,6 +29,7 @@ void VCCInput() {
 
 }
 
+
 String IpAddress2String(const IPAddress & ipAddress)
 {
   return String(ipAddress[0]) + String(".") + \

@@ -8,6 +8,7 @@
 
 #define PIN_LED D4
 #define PIN_SIM800L_ON_OFF D1
+#define TIMEOUT 10000
 
 #define NUM_PARAMS 5
 #define BLYNK_PRINT Serial
@@ -40,7 +41,7 @@ byte pinLed = PIN_LED;
 
 */
 
-ESP8266WebServer server(80);
+ESP8266WebServer server(32777);
 //AsyncWebServer server(80);
 
 // You should get Auth Token in the Blynk App.
@@ -57,7 +58,7 @@ const char password_AP[] = "12345678";       //Definimos la contraseña de nuest
 
 
 //byte arduino_mac[] = { 0x5C, 0xCF, 0x7F, 0xD0, 0x0E, 0xF8 };
-IPAddress arduino_ip(192, 168, 1, 241);
+IPAddress arduino_ip(192, 168, 1, 243);
 IPAddress gateway_ip(192, 168, 1, 1);
 IPAddress subnet_mask(255, 255, 255, 0);
 IPAddress dns_ip(80, 58, 61, 254);
@@ -74,10 +75,10 @@ void setup()
 {
 
   Serial.begin(9600);
-  pinMode(PIN_LED, OUTPUT);     
+  pinMode(PIN_LED, OUTPUT);
   pinMode(PIN_SIM800L_ON_OFF, OUTPUT); // SIM800L PWK pin is conected to D1
   digitalWrite(PIN_SIM800L_ON_OFF, HIGH);
-  
+
   //estado = INICIO;
   Serial.println();
 
@@ -90,8 +91,8 @@ void setup()
   //clear_EEPROM();
   //EEPROM.commit();
   //delay(2000);
-  //  write_to_Memory(String(INICIO), String(ssid), String(pass), IpAddress2String(arduino_ip), IpAddress2String(gateway_ip));
-  //  delay(2000);
+  //write_to_Memory(String(INICIO), String(ssid), String(pass), IpAddress2String(arduino_ip), IpAddress2String(gateway_ip));
+  //delay(2000);
 
   // OBTENER CONFIGURACION
   read_EEPROM();
@@ -99,6 +100,7 @@ void setup()
   EEPROM.end();
   delay(5000);
   Serial.println();
+  //estado = INICIO;
 
   switch (estado) {
     case CONFIG:

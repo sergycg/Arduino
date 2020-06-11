@@ -1,4 +1,5 @@
-void wakeUp()
+
+void SIM800L_wakeUp()
 {
     // SIM800L PWK pin is conected to PIN_SIM800L_ON_OFF
   digitalWrite(PIN_SIM800L_ON_OFF, HIGH);
@@ -20,8 +21,40 @@ void wakeUp()
   Serial.println("SIM800L ON");
 }
 
+void SIM800L_powerOn()
+{
 
-void call() 
+  uint8_t answer = 0;
+  int reintentos = 0;
+  
+  Serial.println("On Power_on...");
+
+  Serial.begin(19200);
+  delay(1000);
+  SIM800L.begin(19200);
+  delay(5000);
+
+  // checks if the module is started
+  answer = sendATcommand("AT\r\n", "OK\r\n", TIMEOUT);
+  if (answer == 0)
+  {
+    // power on pulse
+    digitalWrite(PIN_SIM800L_ON_OFF, HIGH);
+    delay(3000);
+    digitalWrite(PIN_SIM800L_ON_OFF, LOW);
+
+    // waits for an answer from the module
+    while (answer == 0 && reintentos < 10)
+    {
+      // Send AT every two seconds and wait for the answer
+      answer = sendATcommand("AT\r\n", "OK\r\n", TIMEOUT);
+      Serial.println("Trying connection with module...");
+      reintentos++;
+    }
+  }
+}
+
+void SIM800L_call() 
 {
   delay(20000);
   Serial.println("Realizando llamada...");
@@ -32,7 +65,7 @@ void call()
   Serial.println("Llamada finalizada");
 }
 
-void SendTextMessage()
+void SIM800L_SendTextMessagePrueba()
 {
   Serial.println("prueba");
  // SIM800L.print("AT+CMGF=1\r");
@@ -49,7 +82,7 @@ void SendTextMessage()
   //SIM800L.println();
 }
 
-void SendTextMessage2()
+void SIM800L_SendTextMessage()
 {
   int8_t answer;
   //  mySerial.print("AT+CMGF=1\r");
@@ -81,6 +114,7 @@ void SendTextMessage2()
   //delay(100);
   //mySerial.println();
 }
+
 
 int8_t sendATcommand(char* ATcommand, char* expected_answer, unsigned int timeout) {
 

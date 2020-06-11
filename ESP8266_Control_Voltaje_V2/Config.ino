@@ -33,6 +33,8 @@ void config_rest_server_routing() {
     server.send(200, "application/json", "{\"ip\":\"" + IpAddress2String(arduino_ip) + "\",\"pass\":\"" + pass + "\",\"gateway_ip\":\"" + IpAddress2String(gateway_ip) + "\"}");
   });
 
+  server.on("/getADC", handleADC); //Reads ADC function is called from out index.html
+
   /*server.on("/getDefaultIP", HTTP_GET, []() {
      server.send(200, "text/plain", IpAddress2String(arduino_ip));
      });*/
@@ -51,6 +53,27 @@ void config_rest_server_routing() {
     server.on("/getDefaultGateway", HTTP_GET, []() {
     server.send(200, "text/plain", IpAddress2String(gateway_ip));
     });*/
+}
+
+void handleADC() {
+
+  float sensorValue = analogRead(A0);
+  //float voltaje = (5 * sensorValue * (R1 + R2)) / (1024 * R2);
+  //voltaje = (5 * sensorValue) / 1024;
+  //voltaje = voltaje / (R2/(R1+R2));
+  float voltaje = sensorValue * 0.0145;
+  String adc = String(voltaje);
+  Serial.println(adc);
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Access-Control-Allow-Methods", "PUT,POST,GET,OPTIONS");
+  server.sendHeader("Access-Control-Allow-Headers", "*");
+  server.send(200, "text/plane", adc);
+
+  /*int a = analogRead(A0);
+    a = map(a,0,1023,0,100);
+    String adc = String(a);
+    Serial.println(adc);
+    server.send(200, "text/plane",adc);*/
 }
 
 void handleConfig() {
