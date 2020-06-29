@@ -56,6 +56,7 @@ String pass = "61BB34D737589D4D1166";
 const char ssid_AP[] = "NodeMCU-ESP8266";    //Definimos la SSDI de nuestro servidor WiFi -nombre de red-
 const char password_AP[] = "12345678";       //Definimos la contraseña de nuestro servidor
 
+String serverName = "http://192.168.1.49:8083/save";
 
 //byte arduino_mac[] = { 0x5C, 0xCF, 0x7F, 0xD0, 0x0E, 0xF8 };
 IPAddress arduino_ip(192, 168, 1, 243);
@@ -127,6 +128,7 @@ void setup()
       server_setup();
       delay(3000);
       timer.setInterval(1000L, VCCInput);
+      timer.setInterval(300000L, saveSensorValue);
       ticker.detach(); // Eliminamos el temporizador (ponerlo en la parte del codigo donde queramos cerrar el temporizador)
       digitalWrite(PIN_LED, LOW); // dejamos el led encendido
       break;

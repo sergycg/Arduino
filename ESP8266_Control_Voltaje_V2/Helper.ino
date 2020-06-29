@@ -1,32 +1,74 @@
 
 void VCCInput() {
+  float voltaje = readVoltajeSensor();
+
   Blynk.virtualWrite(V2, ESP.getVcc() * 0.001);
+  Blynk.virtualWrite(V4, voltaje);
+  if (voltaje < 0.75) {
+    veces++;
+    Blynk.setProperty(V4, "color", "#D3435C"); //ROJO
+    if (veces > 1 && estado != LUZ_APAGADA) {
+      estado = LUZ_APAGADA;
+      terminalPrintln("SE HA IDO LA LUZ...");
+      Blynk.email("sergio.camacho@telefonica.net", "Subject: Luz Apagada", "Se ha ido la luz.");
+      sendHttpSensorValue(voltaje);
+    }
+  } else {
+    Blynk.setProperty(V4, "color", "#00FF7F"); //VERDE
+    if (veces > 1 &&  estado != LUZ_ENCENDIDA) {
+      estado = LUZ_ENCENDIDA;
+      terminalPrintln("SE HA RESTAURADO LA LUZ...");
+      Blynk.email("sergio.camacho@telefonica.net", "Subject: Luz Encendida", "Se ha restaurado la luz.");
+      sendHttpSensorValue(voltaje);
+    }
+    veces = 0;
+  }
+
+}
+
+void saveSensorValue() {
+  float voltaje = readVoltajeSensor();
+  sendHttpSensorValue(voltaje);
+}
+
+
+void sendHttpSensorValue(float voltaje) {
+  HTTPClient http;
+
+  // Your Domain name with URL path or IP address with path
+  http.begin(serverName);
+
+  // Specify content-type header
+  // If you need an HTTP request with a content type: application/x-www-form-urlencoded, use the following:
+  //http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  // Data to send with HTTP POST
+  //String httpRequestData = "api_key=tPmAT5Ab3j7F9&sensor=BME280&value1=24.25&value2=49.54&value3=1005.14";
+  // Send HTTP POST request
+  //int httpResponseCode = http.POST(httpRequestData);
+
+  // If you need an HTTP request with a content type: application/json, use the following:
+  http.addHeader("Content-Type", "application/json");
+  int httpResponseCode = http.POST("{\"voltaje\":\"" + String(voltaje) + "\"}");
+
+  // If you need an HTTP request with a content type: text/plain
+  //http.addHeader("Content-Type", "text/plain");
+  //int httpResponseCode = http.POST("Hello, World!");
+
+  Serial.print("HTTP Response code: ");
+  Serial.println(httpResponseCode);
+
+  // Free resources
+  http.end();
+}
+
+float readVoltajeSensor() {
 
   float sensorValue = analogRead(A0);
   //float voltaje = (5 * sensorValue * (R1 + R2)) / (1024 * R2);
   //voltaje = (5 * sensorValue) / 1024;
   //voltaje = voltaje / (R2/(R1+R2));
   float voltaje = sensorValue * 0.0145;
-
-  Blynk.virtualWrite(V4, voltaje);
-  if (voltaje < 0.75) {
-    veces++;
-    Blynk.setProperty(V4, "color", "#D3435C"); //ROJO
-    if (veces > 5 && estado != LUZ_APAGADA) {
-      terminalPrintln("SE HA IDO LA LUZ...");
-      Blynk.email("sergio.camacho@telefonica.net", "Subject: Luz Apagada", "Se ha ido la luz.");
-      estado = LUZ_APAGADA;
-    }
-  } else {
-    Blynk.setProperty(V4, "color", "#00FF7F"); //VERDE
-    if (veces > 5 &&  estado != LUZ_ENCENDIDA) {
-      terminalPrintln("SE HA RESTAURADO LA LUZ...");
-      Blynk.email("sergio.camacho@telefonica.net", "Subject: Luz Encendida", "Se ha restaurado la luz.");
-      estado = LUZ_ENCENDIDA;
-    }
-    veces = 0;
-  }
-
+  return voltaje;
 }
 
 
