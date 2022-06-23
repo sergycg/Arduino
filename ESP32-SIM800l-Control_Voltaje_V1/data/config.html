@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <title>CONFIGURACION ESP8266 CONTROLADOR DE VOLTAJE V.2.0 by Sergycg</title>
+    <meta charset="utf-8" />
+    <style></style>
+    <script>
+        $(document).ready(function() {
+            $('#reinicio').hide();
+            getDefaultData();
+            var gjCountAndRedirectStatus = false; //prevent from seting multiple Interval
+
+
+
+            // var state = false;
+
+            // $('#accesspanel').on('submit', function(e) {
+
+            //     e.preventDefault();
+
+            //     state = !state;
+            //     if (validarForm()) {
+            //         jQuery("#action").val("/config");
+            //         jQuery("#accesspanel").submit();
+            //     }
+            //     if (state) {
+            //         document.getElementById("litheader").className = "poweron";
+            //         document.getElementById("go").className = "";
+            //         document.getElementById("go").value = "Initializing...";
+            //     } else {
+            //         document.getElementById("litheader").className = "";
+            //         document.getElementById("go").className = "denied";
+            //         document.getElementById("go").value = "Access Denied";
+            //     }
+
+            // });
+
+
+            $('#reset').click(function(e) {
+                jQuery.ajax({
+                    url: "/writeAndReset",
+                    type: "get",
+                    method: "get",
+                    success: function(bean) {
+
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+
+                    }
+                });
+                $('#reset').attr("disabled", true);
+                $('#go').attr("disabled", true);
+                $('#escanear').attr("disabled", true);
+                if (gjCountAndRedirectStatus == false) {
+                    gjCountAndRedirect(45, "http://" + $('#IP').val() + ":" + $('#PORT').val() + "/index.html");
+                    gjCountAndRedirectStatus = true;
+                }
+                // setTimeout(function() {
+                //     window.location.href = "http://" + $('#IP').val() + "/config.html"
+                // }, 20000);
+
+            });
+
+
+            $('#go').click(function(e) {
+                if (validarForm()) {
+                    $('#litheader').addClass("poweron");
+                    $('#go').removeClass();
+                    $('#go').val("Enviando...");
+                    jQuery.ajax({
+                        url: "/config",
+                        type: "post",
+                        method: "post",
+                        dataType: "json",
+                        data: {
+                            ssid: $('#ssid').val(),
+                            Password: $('#Password').val(),
+                            IP: $('#IP').val(),
+                            GW: $('#GW').val()
+                        },
+                        success: function(bean) {
+                            $('#accesspanel').height(440);
+                            $('#reinicio').show();
+                            $('#go').addClass("success");
+                            $('#go').val("Enviado");
+                            $('#ipRedirect').html($('#IP').val());
+
+                        },
+                        error: function(xhr, ajaxOptions, thrownError) {
+                            $('#litheader').removeClass();
+                            $('#go').addClass("denied");
+                            $('#go').val("Error");
+                            $('#accesspanel').height(380);
+                            $('#reinicio').hide();
+                        }
+                    });
+                }
+            });
+
+
+        });
+
+        // FUNCTION CODE
+        function gjCountAndRedirect(secounds, url) {
+            $('#gj-counter-num').text(secounds);
+            $('#gj-counter-box').show();
+            var interval = setInterval(function() {
+                secounds = secounds - 1;
+                $('#gj-counter-num').text(secounds);
+                if (secounds == 0) {
+                    clearInterval(interval);
+                    window.location = url;
+                    $('#gj-counter-box').hide();
+                }
+            }, 1000);
+            $('#gj-counter-box').click(function() {
+                clearInterval(interval);
+                window.location = url;
+            });
+        }
+
+        function validarForm() {
+            var ssid = document.getElementById("ssid").value;
+            var password = document.getElementById("Password").value;
+            var ip = document.getElementById("IP").value;
+            var gw = document.getElementById("GW").value;
+
+            if (
+                ssid == null ||
+                ssid == "" ||
+                password == null ||
+                password == "" ||
+                ip == null ||
+                ip == "" ||
+                gw == null ||
+                gw == ""
+            ) {
+                alert("Faltan campos por rellenar del formulario");
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        function getRedesDisponibles() {
+            $('#loading').show();
+            $('#texto_loading').text("Escaneando...");
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    //var x = document.getElementById("ssid");
+                    //var option = document.createElement("option");
+                    //option.text = this.responseText;
+                    //x.add(option);
+
+                    document.getElementById("ssid").innerHTML = this.responseText;
+                    $('#loading').hide();
+                    $('#texto_loading').text("Escanear Redes");
+                } else if (this.readyState == 4) {
+                    $('#loading').hide();
+                    $('#texto_loading').text("Escanear Redes");
+                }
+            };
+            xhttp.open("GET", "/getRedesDisponibles", true);
+            xhttp.send();
+        }
+
+        function getDefaultData() {
+            getRedesDisponibles();
+
+            jQuery.ajax({
+                url: "/getDefaultData",
+                dataType: "json",
+                success: function(bean) {
+                    jQuery("#IP").val(bean.ip);
+					jQuery("#PORT").val(bean.port);
+                    jQuery("#GW").val(bean.gateway_ip);
+                    jQuery("#Password").val(bean.pass);
+                }
+            });
+
+        }
+
+
+        /*
+                function getDefaultIP() {
+
+                    // var ip = {
+                    //     idEntrega: "25",
+                    //     idprueba: "33"
+                    // };
+                    jQuery.ajax({
+                        url: "/getDefaultIP",
+                        // type: "POST",
+                        dataType: "json",
+                        // contentType: 'application/json',
+                        // data: JSON.stringify(ip),
+                        // data: {
+                        //     identrega:"25"
+                        // },
+                        success: function(bean) {
+                            jQuery("#IP").val(bean.ip);
+                        }
+                    });
+                }
+
+                function getDefaultPassword() {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            document.getElementById("Password").value = this.responseText;
+                        }
+                    };
+                    xhttp.open("GET", "/getDefaultPassword", true);
+                    xhttp.send();
+                }
+
+                function getDefaultGateway() {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            document.getElementById("GW").value = this.responseText;
+                        }
+                    };
+                    xhttp.open("GET", "/getDefaultGateway", true);
+                    xhttp.send();
+                }*/
+
+
+        /*window.onload = function() {
+            getDefaultData();
+        }*/
+    </script>
+</head>
+
+<body>
+    <!-- <div>
+        <h1>CONFIGURACION ESP8266 CONTROLADOR DE VOLTAJE V.1.0 by Sergycg</h1>
+        <h2>
+            <form action="/config" name="configForm" method="post" >
+                <p>
+                    <label>ssid:</label>
+
+                    <select id="ssid" name="ssid" value=""> </select>
+                    <button type="button" onclick="getRedesDisponibles()">
+          Escanear Redes
+        </button>
+                    <br />
+
+                    <label>Password:</label>
+                    <input maxlength="30" name="Password" id="Password" value="" /><br />
+
+                    <label>IP:</label>
+                    <input maxlength="15" name="IP" id="IP" value="" /><br />
+
+                    <label>Gateway:</label>
+                    <input maxlength="3" name="GW" id="GW" value="" /><br />
+
+                    <input type="submit" value="Enviar" />
+                    <input type="reset" />
+                </p>
+            </form>
+        </h2>
+    </div> -->
+
+    <div class="background-wrap">
+        <div class="background"></div>
+    </div>
+
+    <form id="accesspanel" name="configForm">
+		<input type="hidden" name="PORT" id="PORT">
+        <h1 id="litheader">CONFIGURACIÓN ESP8266</h1>
+        <div class="inset">
+            <p>
+                <select id="ssid" name="ssid" value="" placeholder="ssid"> 
+                  <option>Seleccione SSID</option>
+                </select>
+                <button id="escanear" class="escanear" type="button" onclick="getRedesDisponibles()"><span id="loading"><img src="ajax-loader.gif"></span><span id="texto_loading">Escanear Redes</span></button>
+            </p>
+            <p>
+                <input type="text" name="Password" id="Password" placeholder="Password">
+            </p>
+            <p>
+                <input type="text" name="IP" id="IP" placeholder="IP">
+            </p>
+            <p>
+                <input type="text" name="GW" id="GW" placeholder="Gateway">
+            </p>
+        </div>
+        <p class="p-container">
+            <input type="button" id="go" name="go" value="Enviar">
+        </p>
+
+        <div id="reinicio" style="text-align: center;">
+            <p>
+                <div>
+                    <span class="texto_reinicio">Debe reiniciar la placa para aplicar los cambios</span>
+                    <button type="button" id="reset" class="reset">Reiniciar</button>
+
+                </div>
+                <div id="gj-counter-box">
+                    <h1 id="gj-counter-num"></h1>
+                </div>
+
+                <div>
+                    <span class="texto_reinicio">Después de reiniciar serás redireccionado a la IP: </span><span id="ipRedirect"></span>
+                </div>
+            </p>
+        </div>
+    </form>
+</body>
+
+</html>
